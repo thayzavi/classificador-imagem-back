@@ -1,0 +1,15 @@
+# Arquivos de ambiente
+.env
+env
+
+# Diretórios de cache do Python
+__pycache__/
+*.pyc
+
+# Diretórios de ambiente virtual
+.venv
+venv/
+env/
+
+# Diretórios de upload
+app/uploads/
