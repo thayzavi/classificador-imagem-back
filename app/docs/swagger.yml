@@ -1,0 +1,312 @@
+swagger: "2.0"
+
+info:
+  title: API Classificador de Focos de Dengue
+  version: 1.0.0
+  description: API para autenticação de usuários e análise de imagens com IA.
+
+servers:
+  - url: http://localhost:5000
+
+tags:
+  - name: Auth
+  - name: User
+  - name: Analysis
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    RegisterRequest:
+      type: object
+      required:
+        - nome
+        - email
+        - endereco
+        - cep
+        - numero_residencia
+        - senha
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+        endereco:
+          type: string
+        cep:
+          type: string
+        numero_residencia:
+          type: string
+        senha:
+          type: string
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - senha
+      properties:
+        email:
+          type: string
+        senha:
+          type: string
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        nome:
+          type: string
+        endereco:
+          type: string
+        cep:
+          type: string
+        numero_residencia:
+          type: string
+
+paths:
+
+  /register:
+    post:
+      tags:
+        - Auth
+      summary: Cadastro de usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+
+      responses:
+        '201':
+          description: Usuário cadastrado com sucesso
+
+        '400':
+          description: Dados inválidos
+
+        '409':
+          description: Email já cadastrado
+
+  /login:
+    post:
+      tags:
+        - Auth
+      summary: Login do usuário
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+
+      responses:
+        '200':
+          description: Login realizado com sucesso
+
+        '400':
+          description: Campos obrigatórios ausentes
+
+        '401':
+          description: Senha inválida
+
+        '404':
+          description: Usuário não encontrado
+
+  /user/perfil:
+
+    get:
+      tags:
+        - User
+      summary: Buscar perfil do usuário
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Perfil retornado com sucesso
+
+        '404':
+          description: Usuário não encontrado
+
+    put:
+      tags:
+        - User
+      summary: Atualizar perfil do usuário
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+
+      responses:
+        '200':
+          description: Perfil atualizado com sucesso
+
+        '400':
+          description: JSON inválido
+
+    delete:
+      tags:
+        - User
+      summary: Excluir conta do usuário
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Conta removida com sucesso
+
+  /analysis:
+    post:
+      tags:
+        - Analysis
+      summary: Criar nova análise
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - foto
+                - bairro
+                - local
+                - data_foto
+              properties:
+                foto:
+                  type: string
+                  format: binary
+
+                bairro:
+                  type: string
+
+                local:
+                  type: string
+
+                data_foto:
+                  type: string
+
+      responses:
+        '201':
+          description: Análise realizada com sucesso
+
+        '400':
+          description: Dados inválidos
+
+  /analysis/history:
+    get:
+      tags:
+        - Analysis
+      summary: Histórico de análises do usuário
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Histórico retornado com sucesso
+
+  /analysis/{id}:
+
+    get:
+      tags:
+        - Analysis
+      summary: Buscar detalhes de uma análise
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Detalhes da análise
+
+        '400':
+          description: ID inválido
+
+        '403':
+          description: Acesso negado
+
+        '404':
+          description: Análise não encontrada
+
+    delete:
+      tags:
+        - Analysis
+      summary: Excluir análise
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Análise excluída com sucesso
+
+        '400':
+          description: ID inválido
+
+        '403':
+          description: Acesso negado
+
+        '404':
+          description: Análise não encontrada
+
+  /analysis/download/{id}:
+    get:
+      tags:
+        - Analysis
+      summary: Download do PDF da análise
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: PDF gerado com sucesso
+
+        '400':
+          description: ID inválido
+
+        '403':
+          description: Acesso negado
+
+        '404':
+          description: Análise não encontrada
