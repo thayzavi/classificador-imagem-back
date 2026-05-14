@@ -13,9 +13,10 @@ def register():
 
     data = request.get_json()
 
-    return jsonify({
-        "error": "JSON inválido"
-    }), 400
+    if not data:
+        return jsonify({
+            "error": "JSON inválido"
+        }), 400
 
     required_fields = [
         "nome",

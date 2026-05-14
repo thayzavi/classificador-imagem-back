@@ -39,9 +39,10 @@ def update_profile():
 
     data = request.get_json()
 
-    return jsonify({
-        "error": "JSON inválido"
-    }), 400
+    if not data:
+        return jsonify({
+            "error": "JSON inválido"
+        }), 400
 
     update_data = {}
 
