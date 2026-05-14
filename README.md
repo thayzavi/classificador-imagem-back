@@ -31,7 +31,7 @@ O sistema permite:
 # 📂 Estrutura do Projeto
 
 ```bash
-projeto-ai/
+classificador-imagem-back/
 │
 ├── app/
 │   │
