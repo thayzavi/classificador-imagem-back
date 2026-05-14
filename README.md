@@ -64,11 +64,146 @@ classificador-imagem-back/
 │   ├── utils/
 │   │   └── upload.py
 │   │
-│   └── yolopt/
-│       └── best.pt
+│   └── model/
+│       └── dengue_model.pt
 │
 ├── .env
 ├── .gitignore
 ├── main.py
 ├── requirements.txt
 └── README.md
+
+# ⚙️ Instalação
+
+1. Clone o projeto
+```
+git clone https://github.com/seu-usuario/projeto-ai.git
+
+´´´
+2. Entre na pasta
+```
+cd projeto-ai
+```
+3. Crie o ambiente virtual
+
+Windows
+```
+python -m venv venv
+```
+Linux/Mac
+```
+python3 -m venv venv
+```
+4. Ative o ambiente virtual
+
+Windows
+```
+venv\Scripts\activate
+```
+Linux/Mac
+```
+source venv/bin/activate
+```
+5. Instale as dependências
+```
+pip install -r requirements.txt
+```
+
+# 🔐 Configuração do .env
+
+Crie um arquivo .env na raiz do projeto.
+
+```
+MONGO_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/
+JWT_SECRET_KEY=segredo123
+
+```
+
+# ▶️ Executando o Projeto
+```
+python main.py
+```
+
+A API ficará disponível em:
+```
+http://127.0.0.1:5000
+
+```
+
+# 📚 Swagger
+
+A documentação Swagger estará disponível em:
+```
+http://127.0.0.1:5000/apidocs
+
+```
+# 🔑 Autenticação JWT
+
+A API utiliza JWT Bearer Token.
+Após realizar login, utilize o token nas rotas protegidas:
+
+```
+Authorization: Bearer SEU_TOKEN
+```
+
+# 📌 Endpoints da API
+     Autenticação (Auth)
+
+```
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/register` | Cadastro de novo usuário |
+| POST | `/login` | Login e geração de token JWT |
+```
+# 👤 Usuário
+
+```
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/user/perfil` | Retorna dados do perfil |
+| PUT | `/user/perfil` | Atualiza dados do usuário |
+| DELETE | `/user/perfil` | Remove a conta do usuário |
+
+```
+# 🧠 Análises e IA
+```
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/analysis` | Envia imagem para análise (FormData: foto, bairro, local, data_foto) |
+| GET | `/analysis/history` | Lista histórico de análises do usuário |
+| GET | `/analysis/{id}` | Detalhes de uma análise específica |
+| GET | `/analysis/download/{id}` | Gera e baixa relatório em PDF |
+| DELETE | `/analysis/{id}` | Exclui registro de análise |
+```
+
+# 📄 Geração de PDF
+
+Após a análise, o sistema permite gerar um PDF contendo:
+
+- Informações da análise
+- Resultado da IA
+- Confiança da previsão
+- Dados da imagem
+
+# 🛠️ Dependências
+```
+Flask
+flask-jwt-extended
+flask-pymongo
+flask-bcrypt
+flasgger
+PyYAML
+python-dotenv
+ultralytics
+torch
+opencv-python
+reportlab
+pymongo
+```
+## 👥 Equipe
+- Thayza Vitória
+- Gabriel Ernandes
+- Raissa Vitória
+- Fabricio Estevam
+- Pedro Victor
+- Benardo
