@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import tensorflow as tf
+import tflite_runtime.interpreter as tflite
 
 from PIL import Image
 
@@ -17,7 +17,7 @@ MODEL_PATH = os.path.join(
 
 
 # Carrega o modelo uma única vez
-interpreter = tf.lite.Interpreter(
+interpreter = tflite.Interpreter(
     model_path=MODEL_PATH
 )
 
