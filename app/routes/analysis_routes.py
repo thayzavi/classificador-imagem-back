@@ -71,9 +71,15 @@ def create_analysis():
         "local": local,
         "data_foto": data_foto,
         "imagem": filename,
+
         "resultado": result["resultado"],
         "classe": result["classe"],
-        "confianca": result["confianca"]
+        "confianca": result["confianca"],
+
+        "descricao": result["descricao"],
+        "risco": result["risco"],
+        "prevencao": result["prevencao"],
+        "orientacao": result["orientacao"]
     }
 
     inserted = AnalysisModel.create_analysis(
@@ -81,16 +87,23 @@ def create_analysis():
     )
 
     return jsonify({
-    "message": "Análise realizada com sucesso",
-    "analysis_id": str(inserted.inserted_id),
-    "resultado": {
-        "bairro": analysis_data["bairro"],
-        "local": analysis_data["local"],
-        "data_foto": analysis_data["data_foto"],
-        "imagem": analysis_data["imagem"],
-        "resultado": analysis_data["resultado"],
-        "classe": analysis_data["classe"],
-        "confianca": analysis_data["confianca"]
+        "message": "Análise realizada com sucesso",
+        "analysis_id": str(inserted.inserted_id),
+
+        "resultado": {
+            "bairro": analysis_data["bairro"],
+            "local": analysis_data["local"],
+            "data_foto": analysis_data["data_foto"],
+            "imagem": analysis_data["imagem"],
+
+            "resultado": analysis_data["resultado"],
+            "classe": analysis_data["classe"],
+            "confianca": analysis_data["confianca"],
+
+            "descricao": analysis_data["descricao"],
+            "risco": analysis_data["risco"],
+            "prevencao": analysis_data["prevencao"],
+            "orientacao": analysis_data["orientacao"]
     }
 }), 201
 

@@ -16,7 +16,7 @@ MODEL_PATH = os.path.join(
 )
 
 
-# Carrega o modelo uma única vez
+
 interpreter = tflite.Interpreter(
     model_path=MODEL_PATH
 )
@@ -24,7 +24,6 @@ interpreter = tflite.Interpreter(
 interpreter.allocate_tensors()
 
 
-# Informações de entrada e saída
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
@@ -33,25 +32,47 @@ def preprocess_image(image_path):
 
     img = Image.open(image_path).convert("RGB")
 
-    # Redimensiona para o tamanho esperado pelo modelo
     img = img.resize((224, 224))
 
-    # Converte para array numpy
     img_array = np.array(
         img,
         dtype=np.float32
     )
 
-    # Normaliza
     img_array = img_array / 255.0
 
-    # Adiciona dimensão batch
     img_array = np.expand_dims(
         img_array,
         axis=0
     )
 
     return img_array
+
+FOCOS_DENGUE = {
+    "positivo": {
+        "descricao": "Possível acúmulo de água parada identificado na imagem, podendo servir como criadouro do mosquito Aedes aegypti.",
+        "risco": "alto",
+        "prevencao": [
+            "Esvazie recipientes com água parada",
+            "Realize a limpeza do local",
+            "Tampe caixas d’água",
+            "Descarte pneus e objetos acumuladores de água",
+            "Mantenha calhas limpas"
+        ],
+        "orientacao": "Recomenda-se realizar a limpeza imediata do local e monitorar possíveis novos focos."
+    },
+
+    "negativo": {
+        "descricao": "Nenhum possível foco de dengue foi identificado na imagem.",
+        "risco": "baixo",
+        "prevencao": [
+            "Continue monitorando o ambiente",
+            "Evite acúmulo de água parada",
+            "Mantenha recipientes fechados"
+        ],
+        "orientacao": "O ambiente aparenta estar seguro, mas a prevenção deve continuar regularmente."
+    }
+}
 
 
 def predict_image(image_path):
@@ -60,36 +81,47 @@ def predict_image(image_path):
 
         img_array = preprocess_image(image_path)
 
-        # Define tensor de entrada
         interpreter.set_tensor(
             input_details[0]['index'],
             img_array
         )
 
-        # Executa inferência
         interpreter.invoke()
 
-        # Obtém resultado
         prediction = interpreter.get_tensor(
             output_details[0]['index']
         )
 
         confidence = float(prediction[0][0])
 
-        # Classe positiva
+        # CASO POSITIVO
         if confidence >= 0.5:
+
+            info = FOCOS_DENGUE["positivo"]
 
             return {
                 "resultado": "Possível foco de dengue",
                 "classe": "positivo",
-                "confianca": round(confidence * 100, 2)
+                "confianca": round(confidence * 100, 2),
+
+                "descricao": info["descricao"],
+                "risco": info["risco"],
+                "prevencao": info["prevencao"],
+                "orientacao": info["orientacao"]
             }
 
-        # Classe negativa
+        # CASO NEGATIVO
+        info = FOCOS_DENGUE["negativo"]
+
         return {
             "resultado": "Sem foco de dengue",
             "classe": "negativo",
-            "confianca": round((1 - confidence) * 100, 2)
+            "confianca": round((1 - confidence) * 100, 2),
+
+            "descricao": info["descricao"],
+            "risco": info["risco"],
+            "prevencao": info["prevencao"],
+            "orientacao": info["orientacao"]
         }
 
     except Exception as e:
