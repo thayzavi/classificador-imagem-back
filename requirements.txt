@@ -9,7 +9,7 @@ PyYAML==6.0.2
 python-dotenv==1.0.1
 pymongo==4.8.0
 
-tflite-runtime==2.14.0
+tensorflow-cpu==2.16.1te
 numpy==1.26.4
 Pillow==10.4.0
 

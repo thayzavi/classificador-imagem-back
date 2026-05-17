@@ -1,9 +1,8 @@
 import os
 import numpy as np
-import tflite_runtime.interpreter as tflite
+import tensorflow as tf
 
 from PIL import Image
-
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +16,7 @@ MODEL_PATH = os.path.join(
 
 
 
-interpreter = tflite.Interpreter(
+interpreter = tf.lite.Interpreter(
     model_path=MODEL_PATH
 )
 
