@@ -94,7 +94,7 @@ def predict_image(image_path):
         confidence = float(prediction[0][0])
 
         # CASO POSITIVO
-        if confidence >= 0.5:
+        if confidence >= 0.75:
 
             info = FOCOS_DENGUE["positivo"]
 
