@@ -93,6 +93,9 @@ def predict_image(image_path):
 
         confidence = float(prediction[0][0])
 
+        # DEBUG
+        print("Prediction:", confidence)
+
         # CASO POSITIVO
         if confidence >= 0.75:
 
