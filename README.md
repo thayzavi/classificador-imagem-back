@@ -21,7 +21,7 @@ O sistema permite:
 - Flask JWT Extended
 - MongoDB
 - Flask PyMongo
-- Ultralytics YOLO
+- TensorFlow
 - OpenCV
 - ReportLab
 - Swagger / Flasgger
@@ -126,7 +126,7 @@ python main.py
 
 A API ficará disponível em:
 ```
-http://127.0.0.1:5000
+https://api-classificador-img.onrender.com
 
 ```
 
@@ -134,7 +134,7 @@ http://127.0.0.1:5000
 
 A documentação Swagger estará disponível em:
 ```
-http://127.0.0.1:5000/apidocs
+https://api-classificador-img.onrender.com/apidocs/
 
 ```
 # 🔑 Autenticação JWT
@@ -149,24 +149,24 @@ Authorization: Bearer SEU_TOKEN
 # 📌 Endpoints da API
      Autenticação (Auth)
 
-```
+
 | Método | Rota | Descrição |
 |---|---|---|
 | POST | `/register` | Cadastro de novo usuário |
 | POST | `/login` | Login e geração de token JWT |
-```
+
 # 👤 Usuário
 
-```
+
 | Método | Rota | Descrição |
 |---|---|---|
 | GET | `/user/perfil` | Retorna dados do perfil |
 | PUT | `/user/perfil` | Atualiza dados do usuário |
 | DELETE | `/user/perfil` | Remove a conta do usuário |
 
-```
+
 # 🧠 Análises e IA
-```
+
 | Método | Rota | Descrição |
 |---|---|---|
 | POST | `/analysis` | Envia imagem para análise (FormData: foto, bairro, local, data_foto) |
@@ -174,7 +174,7 @@ Authorization: Bearer SEU_TOKEN
 | GET | `/analysis/{id}` | Detalhes de uma análise específica |
 | GET | `/analysis/download/{id}` | Gera e baixa relatório em PDF |
 | DELETE | `/analysis/{id}` | Exclui registro de análise |
-```
+
 
 # 📄 Geração de PDF
 
