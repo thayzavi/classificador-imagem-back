@@ -1,6 +1,9 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
+
 from flasgger import Swagger
+
 import yaml
 
 from app.config.config import Config
@@ -21,19 +24,37 @@ def create_app():
     # Config
     app.config.from_object(Config)
 
+    # CORS
+    CORS(
+        app,
+        resources={
+            r"/*": {
+                "origins": "*"
+            }
+        }
+    )
+
     # MongoDB
     mongo.init_app(app)
 
     # JWT
     jwt.init_app(app)
 
-
     # Swagger
-    with open("app/docs/swagger.yml", "r", encoding="utf-8") as file:
+    with open(
+        "app/docs/swagger.yml",
+        "r",
+        encoding="utf-8"
+    ) as file:
+
         swagger_template = yaml.safe_load(file)
 
-    Swagger(app, template=swagger_template)
+    Swagger(
+        app,
+        template=swagger_template
+    )
 
+    # Blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(analysis_bp)
     app.register_blueprint(user_bp)
@@ -41,6 +62,7 @@ def create_app():
     # Rota principal
     @app.route("/")
     def home():
+
         return {
             "message": "API Dengue AI Online"
         }
