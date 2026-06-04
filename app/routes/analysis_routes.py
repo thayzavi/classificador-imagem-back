@@ -1,12 +1,12 @@
 import os
+import tempfile
 
 from bson.errors import InvalidId
 from flask import (
     Blueprint,
     request,
     jsonify,
-    send_file,
-    send_from_directory
+    send_file
 )
 
 from flask_jwt_extended import (
@@ -14,34 +14,39 @@ from flask_jwt_extended import (
     get_jwt_identity
 )
 
+import cloudinary.uploader
+
 from app.config.config import Config
 from app.models.analysis_model import AnalysisModel
 from app.services.ai_service import predict_image
 from app.services.pdf_service import generate_pdf
-from app.utils.upload import save_image
+from app.services.cloudinary_service import upload_image
 
 
 analysis_bp = Blueprint("analysis", __name__)
 
 UPLOAD_FOLDER = Config.UPLOAD_FOLDER
 
-@analysis_bp.route("/uploads/<filename>", methods=["GET"])
-def get_image(filename):
+temp_path = None
 
-    image_path = os.path.join(
-        UPLOAD_FOLDER,
-        filename
-    )
+try:
+    with tempfile.NamedTemporaryFile(
+        suffix=".jpg",
+        delete=False
+    ) as temp:
 
-    if not os.path.exists(image_path):
-        return jsonify({
-            "error": "Imagem não encontrada"
-        }), 404
+        temp_path = temp.name
+        image.save(temp_path)
 
-    return send_from_directory(
-        UPLOAD_FOLDER,
-        filename
-    )
+    result = predict_image(temp_path)
+
+finally:
+    if temp_path and os.path.exists(temp_path):
+        os.remove(temp_path)
+
+image.seek(0)
+
+upload_result = upload_image(image)
 
 
 @analysis_bp.route("/analysis", methods=["POST"])
@@ -78,24 +83,6 @@ def create_analysis():
                 "error": "Latitude ou longitude inválida"
             }), 400
 
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-
-    saved_image = save_image(
-        image,
-        UPLOAD_FOLDER
-    )
-
-    if not saved_image["success"]:
-        return jsonify({
-            "error": saved_image["error"]
-        }), 400
-
-    image_path = saved_image["path"]
-    filename = saved_image["filename"]
-
-    result = predict_image(image_path)
-
     analysis_data = {
         "user_id": user_id,
         "bairro": bairro,
@@ -107,7 +94,8 @@ def create_analysis():
             "longitude": longitude
         } if latitude and longitude else None,
 
-        "imagem": filename,
+        "imagem_url": upload_result["url"],
+        "public_id": upload_result["public_id"],
 
         "resultado": result["resultado"],
         "classe": result["classe"],
@@ -131,8 +119,8 @@ def create_analysis():
             "bairro": analysis_data["bairro"],
             "local": analysis_data["local"],
             "data_foto": analysis_data["data_foto"],
-            "imagem": analysis_data["imagem"],
-            "imagem_url": f"{request.host_url.rstrip('/')}/uploads/{analysis_data['imagem']}",
+
+            "imagem_url": analysis_data["imagem_url"],
 
             "resultado": analysis_data["resultado"],
             "classe": analysis_data["classe"],
@@ -141,7 +129,7 @@ def create_analysis():
             "descricao": analysis_data["descricao"],
             "risco": analysis_data["risco"],
             "prevencao": analysis_data["prevencao"],
-            "orientacao": analysis_data["orientacao"]
+        "orientacao": analysis_data["orientacao"]
     }
 }), 201
 
@@ -166,7 +154,7 @@ def get_history():
             "confianca": item["confianca"],
             "data_foto": item["data_foto"],
             "localizacao": item.get("localizacao"),
-            "imagem_url": f"{request.host_url.rstrip('/')}/uploads/{item['imagem']}",
+            "imagem_url": item["imagem_url"],
         })
 
     return jsonify(response), 200
@@ -203,8 +191,7 @@ def get_analysis_details(id):
 
         "data_foto": analysis["data_foto"],
 
-        "imagem": analysis["imagem"],
-        "imagem_url": f"{request.host_url.rstrip('/')}/uploads/{analysis['imagem']}",
+        "imagem_url": analysis["imagem_url"],
 
         "localizacao": analysis.get("localizacao"),
 
@@ -243,13 +230,10 @@ def delete_analysis(id):
             "error": "Acesso negado"
         }), 403
 
-    image_path = os.path.join(
-        UPLOAD_FOLDER,
-        analysis["imagem"]
+    if analysis.get("public_id"):
+    cloudinary.uploader.destroy(
+        analysis["public_id"]
     )
-
-    if os.path.exists(image_path):
-        os.remove(image_path)
 
     AnalysisModel.delete(id)
 
@@ -276,25 +260,17 @@ def download_analysis(id):
         return jsonify({
             "error": "Análise não encontrada"
         }), 404
+
     if analysis["user_id"] != user_id:
         return jsonify({
             "error": "Acesso negado"
         }), 403
 
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-
-    pdf_path = os.path.join(
-        UPLOAD_FOLDER,
-        f"{id}.pdf"
-    )
-
-    generate_pdf(
-        pdf_path,
-        analysis
-    )
+    pdf_buffer = generate_pdf(analysis)
 
     return send_file(
-        pdf_path,
-        as_attachment=True
+        pdf_buffer,
+        as_attachment=True,
+        download_name=f"analise_{id}.pdf",
+        mimetype="application/pdf"
     )

@@ -14,8 +14,7 @@ def allowed_file(filename):
 def save_image(image, upload_folder):
 
     if image.filename == "":
-        return {
-            "success": False,
+        return {. 
             "error": "Nenhuma imagem enviada"
         }
 

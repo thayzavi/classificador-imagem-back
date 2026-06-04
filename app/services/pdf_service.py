@@ -1,12 +1,10 @@
-import os
+from io import BytesIO
 
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
     Spacer,
-    Image,
-    HRFlowable,
-    PageBreak
+    HRFlowable
 )
 
 from reportlab.lib.styles import (
@@ -17,8 +15,6 @@ from reportlab.lib.styles import (
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import letter
-
-from app.config.config import Config
 
 
 def format_content(value):
@@ -38,10 +34,13 @@ def format_content(value):
     return str(value)
 
 
-def generate_pdf(path, analysis):
+def generate_pdf(analysis):
 
     document = SimpleDocTemplate(
-        path,
+        buffer = BytesIO()
+
+    document = SimpleDocTemplate(
+        buffer,
         pagesize=letter,
         rightMargin=40,
         leftMargin=40,
@@ -137,38 +136,6 @@ def generate_pdf(path, analysis):
     )
 
     elements.append(Spacer(1, 15))
-
-    image_name = analysis.get("imagem")
-
-    if image_name:
-
-        image_path = os.path.join(
-            Config.UPLOAD_FOLDER,
-            image_name
-        )
-
-        if os.path.exists(image_path):
-
-            elements.append(
-                Paragraph(
-                    "2. Imagem Analisada",
-                    section_style
-                )
-            )
-
-            try:
-
-                img = Image(image_path)
-
-                img.drawWidth = 350
-                img.drawHeight = 250
-
-                elements.append(img)
-
-            except Exception as e:
-                print("Erro ao carregar imagem:", e)
-
-            elements.append(Spacer(1, 20))
 
     elements.append(
         Paragraph(
@@ -287,3 +254,6 @@ def generate_pdf(path, analysis):
     )
 
     document.build(elements)
+    buffer.seek(0)
+
+    return buffer
