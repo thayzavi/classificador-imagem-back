@@ -5,7 +5,8 @@ from flask import (
     Blueprint,
     request,
     jsonify,
-    send_file
+    send_file,
+    send_from_directory
 )
 
 from flask_jwt_extended import (
@@ -23,6 +24,24 @@ from app.utils.upload import save_image
 analysis_bp = Blueprint("analysis", __name__)
 
 UPLOAD_FOLDER = Config.UPLOAD_FOLDER
+
+@analysis_bp.route("/uploads/<filename>", methods=["GET"])
+def get_image(filename):
+
+    image_path = os.path.join(
+        UPLOAD_FOLDER,
+        filename
+    )
+
+    if not os.path.exists(image_path):
+        return jsonify({
+            "error": "Imagem não encontrada"
+        }), 404
+
+    return send_from_directory(
+        UPLOAD_FOLDER,
+        filename
+    )
 
 
 @analysis_bp.route("/analysis", methods=["POST"])
@@ -113,6 +132,7 @@ def create_analysis():
             "local": analysis_data["local"],
             "data_foto": analysis_data["data_foto"],
             "imagem": analysis_data["imagem"],
+            "imagem_url": f"{request.host_url.rstrip('/')}/uploads/{analysis_data['imagem']}",
 
             "resultado": analysis_data["resultado"],
             "classe": analysis_data["classe"],
@@ -145,7 +165,8 @@ def get_history():
             "resultado": item["resultado"],
             "confianca": item["confianca"],
             "data_foto": item["data_foto"],
-            "localizacao": item.get("localizacao")
+            "localizacao": item.get("localizacao"),
+            "imagem_url": f"{request.host_url.rstrip('/')}/uploads/{item['imagem']}",
         })
 
     return jsonify(response), 200
@@ -179,12 +200,22 @@ def get_analysis_details(id):
         "id": str(analysis["_id"]),
         "bairro": analysis["bairro"],
         "local": analysis["local"],
+
         "data_foto": analysis["data_foto"],
+
         "imagem": analysis["imagem"],
+        "imagem_url": f"{request.host_url.rstrip('/')}/uploads/{analysis['imagem']}",
+
         "localizacao": analysis.get("localizacao"),
+
         "resultado": analysis["resultado"],
         "classe": analysis["classe"],
-        "confianca": analysis["confianca"]
+        "confianca": analysis["confianca"],
+
+        "descricao": analysis.get("descricao"),
+        "risco": analysis.get("risco"),
+        "prevencao": analysis.get("prevencao"),
+        "orientacao": analysis.get("orientacao")
     }), 200
 
 
