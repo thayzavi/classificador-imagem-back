@@ -231,9 +231,9 @@ def delete_analysis(id):
         }), 403
 
     if analysis.get("public_id"):
-    cloudinary.uploader.destroy(
-        analysis["public_id"]
-    )
+        cloudinary.uploader.destroy(
+            analysis["public_id"]
+        )
 
     AnalysisModel.delete(id)
 
