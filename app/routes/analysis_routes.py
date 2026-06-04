@@ -144,16 +144,16 @@ def get_history():
 
     for item in analyses:
 
-        response.append({
-            "id": str(item["_id"]),
-            "bairro": item["bairro"],
-            "local": item["local"],
-            "resultado": item["resultado"],
-            "confianca": item["confianca"],
-            "data_foto": item["data_foto"],
-            "localizacao": item.get("localizacao"),
-            "imagem_url": item["imagem_url"],
-        })
+    response.append({
+        "id": str(item["_id"]),
+        "bairro": item.get("bairro"),
+        "local": item.get("local"),
+        "resultado": item.get("resultado"),
+        "confianca": item.get("confianca"),
+        "data_foto": item.get("data_foto"),
+        "localizacao": item.get("localizacao"),
+        "imagem_url": item.get("imagem_url"),
+    })
 
     return jsonify(response), 200
 
