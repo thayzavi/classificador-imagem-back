@@ -41,11 +41,23 @@ def create_analysis():
     bairro = request.form.get("bairro")
     local = request.form.get("local")
     data_foto = request.form.get("data_foto")
+    
+    latitude = request.form.get("latitude")
+    longitude = request.form.get("longitude")
 
     if not bairro or not local or not data_foto:
         return jsonify({
             "error": "Todos os campos são obrigatórios"
         }), 400
+
+    if latitude and longitude:
+        try:
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except ValueError:
+            return jsonify({
+                "error": "Latitude ou longitude inválida"
+            }), 400
 
     if not os.path.exists(UPLOAD_FOLDER):
         os.makedirs(UPLOAD_FOLDER)
@@ -70,6 +82,12 @@ def create_analysis():
         "bairro": bairro,
         "local": local,
         "data_foto": data_foto,
+
+        "localizacao": {
+            "latitude": latitude,
+            "longitude": longitude
+        } if latitude and longitude else None,
+
         "imagem": filename,
 
         "resultado": result["resultado"],
@@ -126,7 +144,8 @@ def get_history():
             "local": item["local"],
             "resultado": item["resultado"],
             "confianca": item["confianca"],
-            "data_foto": item["data_foto"]
+            "data_foto": item["data_foto"],
+            "localizacao": item.get("localizacao")
         })
 
     return jsonify(response), 200
@@ -162,6 +181,7 @@ def get_analysis_details(id):
         "local": analysis["local"],
         "data_foto": analysis["data_foto"],
         "imagem": analysis["imagem"],
+        "localizacao": analysis.get("localizacao"),
         "resultado": analysis["resultado"],
         "classe": analysis["classe"],
         "confianca": analysis["confianca"]
