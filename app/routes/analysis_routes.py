@@ -16,7 +16,6 @@ from flask_jwt_extended import (
 
 import cloudinary.uploader
 
-from app.config.config import Config
 from app.models.analysis_model import AnalysisModel
 from app.services.ai_service import predict_image
 from app.services.pdf_service import generate_pdf
@@ -24,29 +23,6 @@ from app.services.cloudinary_service import upload_image
 
 
 analysis_bp = Blueprint("analysis", __name__)
-
-UPLOAD_FOLDER = Config.UPLOAD_FOLDER
-
-temp_path = None
-
-try:
-    with tempfile.NamedTemporaryFile(
-        suffix=".jpg",
-        delete=False
-    ) as temp:
-
-        temp_path = temp.name
-        image.save(temp_path)
-
-    result = predict_image(temp_path)
-
-finally:
-    if temp_path and os.path.exists(temp_path):
-        os.remove(temp_path)
-
-image.seek(0)
-
-upload_result = upload_image(image)
 
 
 @analysis_bp.route("/analysis", methods=["POST"])
@@ -62,6 +38,26 @@ def create_analysis():
 
     image = request.files["foto"]
 
+    temp_path = None
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            suffix=".jpg",
+            delete=False
+        ) as temp:
+
+            temp_path = temp.name
+            image.save(temp_path)
+
+        result = predict_image(temp_path)
+
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
+
+    image.seek(0)
+
+
     bairro = request.form.get("bairro")
     local = request.form.get("local")
     data_foto = request.form.get("data_foto")
@@ -73,6 +69,8 @@ def create_analysis():
         return jsonify({
             "error": "Todos os campos são obrigatórios"
         }), 400
+
+    upload_result = upload_image(image)
 
     if latitude and longitude:
         try:
@@ -129,7 +127,7 @@ def create_analysis():
             "descricao": analysis_data["descricao"],
             "risco": analysis_data["risco"],
             "prevencao": analysis_data["prevencao"],
-        "orientacao": analysis_data["orientacao"]
+            "orientacao": analysis_data["orientacao"]
     }
 }), 201
 
