@@ -5,7 +5,8 @@ from reportlab.platypus import (
     Paragraph,
     Spacer,
     Image,
-    HRFlowable
+    HRFlowable,
+    PageBreak
 )
 
 from reportlab.lib.styles import (
@@ -18,6 +19,23 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import letter
 
 from app.config.config import Config
+
+
+def format_content(value):
+    """
+    Converte listas, strings ou valores nulos
+    para texto compatível com Paragraph.
+    """
+
+    if value is None:
+        return "Não informado"
+
+    if isinstance(value, list):
+        return "<br/>".join(
+            f"• {item}" for item in value
+        )
+
+    return str(value)
 
 
 def generate_pdf(path, analysis):
@@ -37,21 +55,29 @@ def generate_pdf(path, analysis):
         "TitleStyle",
         parent=styles["Title"],
         alignment=TA_CENTER,
-        textColor=colors.HexColor("#0F4C81")
+        textColor=colors.HexColor("#1565F0")
     )
 
     subtitle_style = ParagraphStyle(
         "SubtitleStyle",
         parent=styles["Heading3"],
         alignment=TA_CENTER,
-        textColor=colors.HexColor("#444444")
+        textColor=colors.HexColor("#555555")
     )
 
     section_style = ParagraphStyle(
         "SectionStyle",
         parent=styles["Heading2"],
-        textColor=colors.HexColor("#0F4C81"),
+        textColor=colors.HexColor("#1565F0"),
         spaceAfter=10
+    )
+
+    result_style = ParagraphStyle(
+        "ResultStyle",
+        parent=styles["BodyText"],
+        textColor=colors.HexColor("#0B8043"),
+        fontSize=12,
+        leading=20
     )
 
     body_style = styles["BodyText"]
@@ -67,7 +93,7 @@ def generate_pdf(path, analysis):
 
     elements.append(
         Paragraph(
-            "Sistema Inteligente de Identificação de Possíveis Focos de Dengue",
+            "Relatório Inteligente de Análise de Possíveis Focos de Dengue",
             subtitle_style
         )
     )
@@ -84,10 +110,9 @@ def generate_pdf(path, analysis):
 
     elements.append(Spacer(1, 20))
 
-
     elements.append(
         Paragraph(
-            "1. Identificação da Ocorrência",
+            "1. Informações da Ocorrência",
             section_style
         )
     )
@@ -133,18 +158,17 @@ def generate_pdf(path, analysis):
 
             try:
 
-                img = Image(
-                    image_path,
-                    width=300,
-                    height=220
-                )
+                img = Image(image_path)
+
+                img.drawWidth = 350
+                img.drawHeight = 250
 
                 elements.append(img)
 
-            except Exception:
-                pass
+            except Exception as e:
+                print("Erro ao carregar imagem:", e)
 
-            elements.append(Spacer(1, 15))
+            elements.append(Spacer(1, 20))
 
     elements.append(
         Paragraph(
@@ -155,14 +179,14 @@ def generate_pdf(path, analysis):
 
     resultado = f"""
     <b>Resultado:</b> {analysis.get('resultado', 'Não informado')}<br/>
-    <b>Classe:</b> {analysis.get('classe', 'Não informado')}<br/>
-    <b>Nível de Confiança:</b> {analysis.get('confianca', 0)}%<br/>
+    <b>Classe Detectada:</b> {analysis.get('classe', 'Não informado')}<br/>
+    <b>Confiança da IA:</b> {analysis.get('confianca', 0)}%<br/>
     """
 
     elements.append(
         Paragraph(
             resultado,
-            body_style
+            result_style
         )
     )
 
@@ -177,16 +201,14 @@ def generate_pdf(path, analysis):
 
     elements.append(
         Paragraph(
-            analysis.get(
-                "descricao",
-                "Descrição não disponível."
+            format_content(
+                analysis.get("descricao")
             ),
             body_style
         )
     )
 
     elements.append(Spacer(1, 15))
-
 
     elements.append(
         Paragraph(
@@ -197,9 +219,8 @@ def generate_pdf(path, analysis):
 
     elements.append(
         Paragraph(
-            analysis.get(
-                "risco",
-                "Não informado."
+            format_content(
+                analysis.get("risco")
             ),
             body_style
         )
@@ -216,9 +237,8 @@ def generate_pdf(path, analysis):
 
     elements.append(
         Paragraph(
-            analysis.get(
-                "prevencao",
-                "Nenhuma recomendação disponível."
+            format_content(
+                analysis.get("prevencao")
             ),
             body_style
         )
@@ -235,15 +255,14 @@ def generate_pdf(path, analysis):
 
     elements.append(
         Paragraph(
-            analysis.get(
-                "orientacao",
-                "Nenhuma orientação disponível."
+            format_content(
+                analysis.get("orientacao")
             ),
             body_style
         )
     )
-    elements.append(Spacer(1, 25))
 
+    elements.append(Spacer(1, 25))
 
     elements.append(
         HRFlowable(
@@ -260,7 +279,8 @@ def generate_pdf(path, analysis):
             """
             <b>Bio Lens</b><br/>
             Relatório gerado automaticamente por Inteligência Artificial.<br/>
-            Este documento auxilia ações de monitoramento, prevenção e combate a possíveis focos do mosquito Aedes aegypti.
+            Este documento tem caráter informativo e auxilia ações de monitoramento,
+            prevenção e combate a possíveis focos do mosquito <i>Aedes aegypti</i>.
             """,
             body_style
         )
