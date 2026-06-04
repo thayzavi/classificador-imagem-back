@@ -36,8 +36,7 @@ def format_content(value):
 
 def generate_pdf(analysis):
 
-    document = SimpleDocTemplate(
-        buffer = BytesIO()
+    buffer = BytesIO()
 
     document = SimpleDocTemplate(
         buffer,
@@ -254,6 +253,7 @@ def generate_pdf(analysis):
     )
 
     document.build(elements)
+
     buffer.seek(0)
 
     return buffer
